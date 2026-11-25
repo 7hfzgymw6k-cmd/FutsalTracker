@@ -1,0 +1,20 @@
+{
+  "name": "Futsal Tracker",
+  "short_name": "FutsalTracker",
+  "description": "Live futsal match statistics, possession, and pass sequence tracker.",
+  "copyright": "Copyright © 2026 Suunnittelu ja laskenta Oy Saga. All rights reserved.",
+  "license": "Personal, non-commercial use only. See LICENSE.txt.",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#00332e",
+  "theme_color": "#00332e",
+  "icons": [
+    {
+      "src": "AppIcon-1024.png",
+      "sizes": "1024x1024",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}

@@ -1,0 +1,84 @@
+FUTSAL TRACKER PERSONAL USE LICENSE
+Version 1.0 — 25 November 2026
+
+Copyright © 2026 Suunnittelu ja laskenta Oy Saga. All rights reserved.
+
+This license covers the Futsal Tracker software, source code, bundled images,
+logos, branding, and other project materials (collectively, the “Software”).
+
+1. License Grant
+
+Subject to this license, Suunnittelu ja laskenta Oy Saga (the “Licensor”)
+grants an individual natural person a royalty-free, non-exclusive,
+non-transferable, and non-sublicensable license to install and use Futsal
+Tracker solely for personal, non-commercial purposes on devices that person
+owns or controls. If source code is supplied, that person may copy and modify
+it solely for the same personal, non-commercial purposes. Reasonable backup
+copies are permitted.
+
+Personal use includes an individual keeping statistics for personal or amateur
+sporting activities when no fee is charged.
+
+2. Restrictions
+
+Except where mandatory law expressly permits otherwise, you may not:
+
+- use the Software for a commercial service, paid activity, or on behalf of a
+  for-profit business;
+- sell, rent, lease, sublicense, publish, redistribute, or otherwise make the
+  Software or its source code available to another person;
+- remove or alter copyright, license, trademark, or other proprietary notices;
+- use the Licensor’s name, logos, or trademarks to endorse or promote another
+  product or service; or
+- reverse engineer, decompile, or disassemble an object-code copy of the
+  Software.
+
+For commercial, organizational, redistribution, or other licensing rights,
+obtain a separate written license from the Licensor.
+
+3. Ownership
+
+The Software is licensed, not sold. The Licensor retains all title, copyright,
+and other intellectual-property rights in the Software and its branding. No
+rights are granted except those expressly stated in this license.
+
+4. Updates and Support
+
+This license does not require the Licensor to provide maintenance, support,
+updates, or continued availability of the Software.
+
+5. Termination
+
+This license terminates automatically if you breach its terms. On termination,
+you must stop using the Software and delete all copies in your possession or
+control. Sections that by their nature should survive termination will survive.
+
+6. Disclaimer of Warranty
+
+TO THE MAXIMUM EXTENT PERMITTED BY APPLICABLE LAW, THE SOFTWARE IS PROVIDED
+“AS IS” AND “AS AVAILABLE,” WITHOUT WARRANTIES OF ANY KIND, EXPRESS, IMPLIED,
+OR STATUTORY, INCLUDING WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR
+PURPOSE, TITLE, AND NON-INFRINGEMENT. NOTHING IN THIS LICENSE EXCLUDES RIGHTS
+OR WARRANTIES THAT CANNOT LAWFULLY BE EXCLUDED.
+
+7. Limitation of Liability
+
+TO THE MAXIMUM EXTENT PERMITTED BY APPLICABLE LAW, THE LICENSOR WILL NOT BE
+LIABLE FOR INDIRECT, INCIDENTAL, SPECIAL, CONSEQUENTIAL, OR PUNITIVE DAMAGES,
+OR FOR LOSS OF DATA, PROFITS, REVENUE, OR BUSINESS, ARISING FROM THE SOFTWARE
+OR THIS LICENSE. THIS LIMITATION DOES NOT APPLY WHERE LIABILITY CANNOT LAWFULLY
+BE LIMITED.
+
+8. Third-Party Platforms
+
+If you access or install the Software through a third-party platform, that
+platform’s applicable terms also apply. This personal-use license is
+supplemental and is not intended to conflict with those terms. If a conflict
+exists, the platform’s terms or mandatory law control to the extent of the
+conflict.
+
+9. Governing Law
+
+This license is governed by the laws of Finland, excluding conflict-of-law
+rules. Mandatory consumer-protection rights and any mandatory jurisdiction
+available to a consumer remain unaffected.
