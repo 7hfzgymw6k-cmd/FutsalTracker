@@ -24,6 +24,7 @@
 
   const RECORDABLE_TYPES = ["goal", "shot", "foul", "corner", "pass"];
   const SUMMARY_TYPES = ["goal", "shot", "foul", "corner", "pass", "turnover", "freeKick10m"];
+  const CLOCK_STOPPAGE_TYPES = new Set(["corner", "foul", "freeKick10m"]);
 
   function generateUUID() {
     if (crypto && crypto.randomUUID) return crypto.randomUUID();
@@ -454,8 +455,12 @@
 
       const eventTime = MatchLogic.elapsedTime(m, nowMs);
       const actionID = generateUUID();
+      let actionStopsClock = false;
 
       const appendEvent = (evType, evTeamID, passSeq = null) => {
+        if (CLOCK_STOPPAGE_TYPES.has(evType)) {
+          actionStopsClock = true;
+        }
         m.events.push({
           id: generateUUID(),
           actionID,
@@ -500,6 +505,11 @@
         if (oppID) appendPossessionIfNeeded(oppID);
       } else if (type === "shot" || type === "corner") {
         appendEvent(type, teamID);
+      }
+
+      if (actionStopsClock && MatchLogic.isClockRunning(m)) {
+        m.elapsedBeforeRun = MatchLogic.elapsedTime(m, nowMs);
+        m.clockStartedAt = null;
       }
 
       this.persist();
