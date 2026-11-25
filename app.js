@@ -10,21 +10,52 @@
     LATEST_STATS: "futsal_tracker_latest_statistics_v1"
   };
 
+  const ICON_PATHS = {
+    goal: '<circle cx="12" cy="12" r="9"/><path d="m12 7 3 2.2-1.1 3.6h-3.8L9 9.2 12 7Z"/><path d="m9 9.2-3.4.5M15 9.2l3.4.5M10.1 12.8 8 15.5M13.9 12.8l2.1 2.7M8 15.5l.9 3.1M16 15.5l-.9 3.1"/>',
+    shot: '<circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="3"/><path d="M12 3v3M12 18v3M3 12h3M18 12h3"/>',
+    foul: '<path d="M12 3 21 8v6c0 4.5-3.8 7-9 8-5.2-1-9-3.5-9-8V8l9-5Z"/><path d="M12 8v5M12 16h.01"/>',
+    corner: '<path d="M5 21V4M5 5h10l-2.5 4L15 13H5"/>',
+    pass: '<circle cx="5" cy="12" r="2.25"/><circle cx="19" cy="12" r="2.25"/><path d="M7.5 12h9"/>',
+    possession: '<circle cx="7" cy="12" r="2"/><circle cx="17" cy="12" r="2"/><path d="M9 8.5c2-1.5 4-1.5 6 0M15 15.5c-2 1.5-4 1.5-6 0"/>',
+    turnover: '<path d="M6 7h9a4 4 0 0 1 0 8H9"/><path d="m9 11-4 4 4 4"/>',
+    freeKick10m: '<circle cx="12" cy="12" r="9"/><path d="M7.5 9h2v6M7.5 15h4M15 9c-1.2 0-2 1.2-2 3s.8 3 2 3 2-1.2 2-3-.8-3-2-3Z"/>',
+    history: '<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>',
+    play: '<circle cx="12" cy="12" r="9"/><path d="m10 8 6 4-6 4V8Z"/>',
+    pause: '<circle cx="12" cy="12" r="9"/><path d="M10 9v6M14 9v6"/>',
+    nextHalf: '<path d="m6 7 7 5-7 5V7ZM17 7v10"/>',
+    court: '<rect x="3" y="5" width="18" height="14" rx="2"/><path d="M12 5v14"/><circle cx="12" cy="12" r="3"/>',
+    erase: '<path d="m7 17-3-3 8.5-8.5a2.1 2.1 0 0 1 3 0l3 3a2.1 2.1 0 0 1 0 3L13 17H7Z"/><path d="m10 8 6 6M7 17h12"/>',
+    stop: '<circle cx="12" cy="12" r="9"/><rect x="9" y="9" width="6" height="6" rx="1"/>',
+    save: '<path d="M5 3h12l2 2v16H5V3Z"/><path d="M8 3v6h8V3M8 21v-7h8v7"/>',
+    share: '<circle cx="18" cy="5" r="2.5"/><circle cx="6" cy="12" r="2.5"/><circle cx="18" cy="19" r="2.5"/><path d="m8.2 10.8 7.6-4.5M8.2 13.2l7.6 4.5"/>',
+    link: '<path d="M10 13a5 5 0 0 0 7.5.5l2-2a5 5 0 0 0-7-7l-1.2 1.2"/><path d="M14 11a5 5 0 0 0-7.5-.5l-2 2a5 5 0 0 0 7 7l1.2-1.2"/>',
+    plus: '<circle cx="12" cy="12" r="9"/><path d="M12 8v8M8 12h8"/>',
+    chart: '<path d="M12 3a9 9 0 1 0 9 9h-9V3Z"/><path d="M15 3.5A8.8 8.8 0 0 1 20.5 9H15V3.5Z"/>',
+    sequence: '<circle cx="5" cy="12" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="19" cy="12" r="2"/><path d="M7 12h3M14 12h3"/>',
+    info: '<circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/>'
+  };
+
+  function renderIcon(name, className = "") {
+    const paths = ICON_PATHS[name] || ICON_PATHS.info;
+    const classes = ["app-icon", className].filter(Boolean).join(" ");
+    return `<svg class="${classes}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">${paths}</svg>`;
+  }
+
   const EVENT_META = {
-    goal: { title: "Goal", icon: "⚽️" },
-    shot: { title: "Shot", icon: "🎯" },
-    foul: { title: "Foul", icon: "✋" },
-    corner: { title: "Corner", icon: "🚩" },
-    pass: { title: "Pass", icon: "➡️" },
-    possessionChange: { title: "Possession", icon: "⇄" },
-    lostBall: { title: "Turnover", icon: "🔄" },
-    turnover: { title: "Turnover", icon: "🔄" },
-    freeKick10m: { title: "Free Kick 10m", icon: "👟" }
+    goal: { title: "Goal", icon: "goal" },
+    shot: { title: "Shot", icon: "shot" },
+    foul: { title: "Foul", icon: "foul" },
+    corner: { title: "Corner", icon: "corner" },
+    pass: { title: "Pass", icon: "pass" },
+    possessionChange: { title: "Possession", icon: "possession" },
+    lostBall: { title: "Turnover", icon: "turnover" },
+    turnover: { title: "Turnover", icon: "turnover" },
+    freeKick10m: { title: "Free Kick 10m", icon: "freeKick10m" }
   };
 
   const RECORDABLE_TYPES = ["goal", "shot", "foul", "corner", "pass"];
   const SUMMARY_TYPES = ["goal", "shot", "foul", "corner", "pass", "turnover", "freeKick10m"];
-  const CLOCK_STOPPAGE_TYPES = new Set(["corner", "foul", "freeKick10m"]);
+  const CLOCK_STOPPAGE_TYPES = new Set(["goal", "corner", "foul", "freeKick10m"]);
 
   function generateUUID() {
     if (crypto && crypto.randomUUID) return crypto.randomUUID();
@@ -653,7 +684,7 @@
         <div>
           <div class="section-label">Saved Statistics</div>
           <button id="view-latest-btn" class="btn-row-item">
-            <span>🕒 View Latest Statistics</span>
+            <span class="button-label">${renderIcon("history")}<span>View Latest Statistics</span></span>
             <strong>${MatchLogic.score(latest, latest.homeTeam.id)}–${MatchLogic.score(latest, latest.awayTeam.id)}</strong>
           </button>
         </div>
@@ -676,7 +707,7 @@
         <div class="section-footer">The match is saved on this device. Tap the clock to start play.</div>
       </div>
 
-      <button id="start-match-btn" class="btn btn-primary" disabled>▶ Start Match</button>
+      <button id="start-match-btn" class="btn btn-primary" disabled>${renderIcon("play")}<span>Start Match</span></button>
 
       ${latestSection}
     `;
@@ -727,7 +758,7 @@
         const passClass = type === "pass" ? "pass-btn" : "";
         return `
           <button class="event-btn ${sideClass} ${passClass}" data-team="${team.id}" data-type="${type}">
-            <span>${meta.icon} ${meta.title}</span>
+            <span class="event-action-label">${renderIcon(meta.icon, "event-icon")}<span>${meta.title}</span></span>
             <span class="event-count">${totals[type]}</span>
           </button>
         `;
@@ -746,8 +777,8 @@
     const recentHTML = lastEvent
       ? `
         <div class="recent-row">
-          <div>
-            <span>${EVENT_META[lastEvent.type]?.icon || ""}</span>
+          <div class="recent-event-main">
+            ${EVENT_META[lastEvent.type] ? renderIcon(EVENT_META[lastEvent.type].icon, "recent-event-icon") : ""}
             <strong>${escapeHTML(MatchLogic.teamName(match, lastEvent.teamID))}</strong>
             <span>${escapeHTML(MatchLogic.eventLogTitle(lastEvent))}</span>
           </div>
@@ -757,14 +788,14 @@
       : `<div class="log-sub">No events recorded</div>`;
 
     const clockBtnLabel = isRunning
-      ? "⏸ Pause Clock"
+      ? `${renderIcon("pause")}<span>Pause Clock</span>`
       : match.hasClockStarted
-      ? "▶ Resume Clock"
-      : "▶ Start Clock";
+      ? `${renderIcon("play")}<span>Resume Clock</span>`
+      : `${renderIcon("play")}<span>Start Clock</span>`;
 
     const secondHalfBtn =
       match.currentHalf === 1
-        ? `<button id="second-half-btn" class="btn btn-secondary">⏭ Start Second Half</button>`
+        ? `<button id="second-half-btn" class="btn btn-secondary">${renderIcon("nextHalf")}<span>Start Second Half</span></button>`
         : "";
 
     container.innerHTML = `
@@ -779,7 +810,7 @@
       </div>
 
       <div class="card clock-bar">
-        <span class="half-label">🏟 Half ${match.currentHalf}</span>
+        <span class="half-label">${renderIcon("court")}<span>Half ${match.currentHalf}</span></span>
         <button id="clock-tap-btn" class="clock-btn">${formatMatchTime(MatchLogic.elapsedTime(match))}</button>
         <span class="clock-status-dot ${isRunning ? "running" : "paused"}" title="${isRunning ? "Running" : "Paused"}"></span>
       </div>
@@ -795,13 +826,13 @@
       </div>
 
       <button id="undo-btn" class="btn btn-destructive" ${match.events.length === 0 ? "disabled" : ""}>
-        ↩ Undo Last Event
+        ${renderIcon("erase")}<span>Undo Last Event</span>
       </button>
 
       <div class="stack-10">
         <button id="toggle-clock-btn" class="btn btn-primary">${clockBtnLabel}</button>
         ${secondHalfBtn}
-        <button id="end-match-btn" class="btn btn-destructive">End Match</button>
+        <button id="end-match-btn" class="btn btn-destructive">${renderIcon("stop")}<span>End Match</span></button>
       </div>
     `;
 
@@ -867,7 +898,7 @@
       const rows = SUMMARY_TYPES.map(
         type => `
           <tr>
-            <td>${EVENT_META[type].icon} ${EVENT_META[type].title}</td>
+            <td><span class="table-label">${renderIcon(EVENT_META[type].icon)}<span>${EVENT_META[type].title}</span></span></td>
             <td>${homeTotals[type]}</td>
             <td>${awayTotals[type]}</td>
           </tr>
@@ -888,12 +919,12 @@
               </thead>
               <tbody>
                 <tr>
-                  <td>📊 Possession</td>
+                  <td><span class="table-label">${renderIcon("chart")}<span>Possession</span></span></td>
                   <td>${poss.home}%</td>
                   <td>${poss.away}%</td>
                 </tr>
                 <tr>
-                  <td>🔗 Highest Pass Seq.</td>
+                  <td><span class="table-label">${renderIcon("sequence")}<span>Highest Pass Seq.</span></span></td>
                   <td>${homeSeq}</td>
                   <td>${awaySeq}</td>
                 </tr>
@@ -914,7 +945,11 @@
               ev => `
             <div class="log-item">
               <div>
-                <div><strong>${EVENT_META[ev.type]?.icon || ""} ${escapeHTML(MatchLogic.teamName(match, ev.teamID))}</strong> · ${escapeHTML(MatchLogic.eventLogTitle(ev))}</div>
+                <div class="log-event-title">
+                  ${EVENT_META[ev.type] ? renderIcon(EVENT_META[ev.type].icon) : ""}
+                  <strong>${escapeHTML(MatchLogic.teamName(match, ev.teamID))}</strong>
+                  <span>· ${escapeHTML(MatchLogic.eventLogTitle(ev))}</span>
+                </div>
                 <div class="log-sub">Half ${ev.half}</div>
               </div>
               <div class="log-time">${formatMatchTime(ev.matchTime)}</div>
@@ -924,18 +959,18 @@
             .join("");
 
     const saveSharedBtn = Store.sharedMatch
-      ? `<button id="save-shared-btn" class="btn btn-primary">💾 Save Match to My Device</button>`
+      ? `<button id="save-shared-btn" class="btn btn-primary">${renderIcon("save")}<span>Save Match to My Device</span></button>`
       : "";
 
     const newMatchBtn = !isArchived
-      ? `<button id="new-match-btn" class="btn btn-secondary">➕ Start New Match</button>`
+      ? `<button id="new-match-btn" class="btn btn-secondary">${renderIcon("plus")}<span>Start New Match</span></button>`
       : "";
 
     container.innerHTML = `
       <div class="stack-10">
         ${saveSharedBtn}
-        <button id="share-text-btn" class="btn btn-primary">📤 Share Summary (Text)</button>
-        <button id="share-link-btn" class="btn btn-secondary">🔗 Share Interactive Match Link</button>
+        <button id="share-text-btn" class="btn btn-primary">${renderIcon("share")}<span>Share Summary (Text)</span></button>
+        <button id="share-link-btn" class="btn btn-secondary">${renderIcon("link")}<span>Share Interactive Match Link</span></button>
         ${newMatchBtn}
         <div class="section-footer">Share text directly to WhatsApp/Messages, or send the link so teammates can open & save the full match stats on their phone.</div>
       </div>

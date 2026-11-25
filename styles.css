@@ -93,9 +93,31 @@ body {
   padding: 6px;
 }
 
+.app-icon {
+  display: inline-block;
+  width: 20px;
+  height: 20px;
+  flex: 0 0 auto;
+  vertical-align: middle;
+}
+
 .icon-btn {
-  font-size: 20px;
-  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  padding: 7px;
+  border-radius: 50%;
+}
+
+.icon-btn:active {
+  background: var(--subtle-surface);
+}
+
+.icon-btn .app-icon {
+  width: 22px;
+  height: 22px;
 }
 
 .view-container {
@@ -254,6 +276,12 @@ body {
   cursor: pointer;
 }
 
+.button-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
 /* Live Match Header */
 .scoreboard-banner {
   display: grid;
@@ -306,8 +334,17 @@ body {
 }
 
 .half-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
   font-size: 15px;
   font-weight: 600;
+}
+
+.half-label .app-icon {
+  width: 19px;
+  height: 19px;
+  color: var(--primary-tint);
 }
 
 .clock-btn {
@@ -381,9 +418,27 @@ body {
   opacity: 0.88;
 }
 
+.event-action-label {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+}
+
+.event-btn .event-icon {
+  width: 23px;
+  height: 23px;
+  stroke-width: 2.1;
+}
+
 .event-btn.pass-btn {
   min-height: 104px;
   font-size: 19px;
+}
+
+.event-btn.pass-btn .event-icon {
+  width: 28px;
+  height: 28px;
 }
 
 .event-btn.home-btn {
@@ -423,6 +478,20 @@ body {
   justify-content: space-between;
   gap: 8px;
   font-size: 15px;
+}
+
+.recent-event-main {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px;
+  min-width: 0;
+}
+
+.recent-event-icon {
+  width: 19px;
+  height: 19px;
+  color: var(--primary-tint);
 }
 
 /* Summary Tables & Logs */
@@ -468,6 +537,18 @@ body {
   width: 64px;
 }
 
+.table-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+}
+
+.table-label .app-icon {
+  width: 18px;
+  height: 18px;
+  color: var(--primary-tint);
+}
+
 .log-item {
   display: flex;
   justify-content: space-between;
@@ -490,6 +571,19 @@ body {
   font-size: 14px;
   font-weight: 600;
   font-variant-numeric: tabular-nums;
+}
+
+.log-event-title {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 5px;
+}
+
+.log-event-title .app-icon {
+  width: 18px;
+  height: 18px;
+  color: var(--primary-tint);
 }
 
 /* Modal */
