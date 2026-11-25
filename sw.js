@@ -4,7 +4,7 @@
  * Licensed for personal, non-commercial use only. See LICENSE.txt.
  */
 
-const CACHE_NAME = "futsal-tracker-v6";
+const CACHE_NAME = "futsal-tracker-v7";
 const ASSETS = [
   "./",
   "./index.html",

@@ -121,6 +121,21 @@
       return match.homeTeam.id;
     },
 
+    scoringTeamIDForLatestAction(match) {
+      const latestEvent = match.events[match.events.length - 1];
+      if (!latestEvent?.actionID) return null;
+      for (let i = match.events.length - 1; i >= 0; i--) {
+        const event = match.events[i];
+        if (event.actionID !== latestEvent.actionID) break;
+        if (event.type === "goal") return event.teamID;
+      }
+      return null;
+    },
+
+    scoreboardTeamID(match) {
+      return this.scoringTeamIDForLatestAction(match) || this.currentPossessionTeamID(match);
+    },
+
     totals(match, teamID, half = null) {
       const t = {
         goal: 0,
@@ -745,7 +760,9 @@
 
     const isRunning = MatchLogic.isClockRunning(match);
     const possID = MatchLogic.currentPossessionTeamID(match);
-    const isAwayPoss = possID === match.awayTeam.id;
+    const scoringTeamID = MatchLogic.scoringTeamIDForLatestAction(match);
+    const scoreboardTeamID = MatchLogic.scoreboardTeamID(match);
+    const isAwayScoreboard = scoreboardTeamID === match.awayTeam.id;
     const homeScore = MatchLogic.score(match, match.homeTeam.id);
     const awayScore = MatchLogic.score(match, match.awayTeam.id);
 
@@ -801,7 +818,7 @@
     container.innerHTML = `
       <div class="card">
         ${renderBrandHeader(true)}
-        <div class="scoreboard-banner ${isAwayPoss ? "away-possession" : "home-possession"}">
+        <div class="scoreboard-banner ${isAwayScoreboard ? "away-possession" : "home-possession"} ${scoringTeamID ? "goal-highlight" : ""}">
           <div class="team-banner-name">${escapeHTML(match.homeTeam.name)}</div>
           <div class="score-digits">${homeScore}–${awayScore}</div>
           <div class="team-banner-name">${escapeHTML(match.awayTeam.name)}</div>
