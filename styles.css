@@ -115,6 +115,13 @@ body {
   background: var(--subtle-surface);
 }
 
+button:focus-visible,
+a:focus-visible,
+input:focus-visible {
+  outline: 3px solid color-mix(in srgb, var(--brand-aqua) 72%, white);
+  outline-offset: 2px;
+}
+
 .icon-btn .app-icon {
   width: 22px;
   height: 22px;
@@ -176,6 +183,29 @@ body {
   color: var(--brand-cream);
   opacity: 0.85;
   margin-top: 4px;
+}
+
+.usage-counter {
+  display: flex;
+  align-items: center;
+  align-self: center;
+  gap: 7px;
+  min-height: 34px;
+  padding: 7px 12px;
+  border: 1px solid var(--border-color);
+  border-radius: 999px;
+  background: var(--bg-card);
+  color: var(--text-secondary);
+  font-size: 13px;
+  font-weight: 650;
+  font-variant-numeric: tabular-nums;
+  box-shadow: 0 1px 2px rgba(0, 51, 46, 0.04);
+}
+
+.usage-counter .app-icon {
+  width: 18px;
+  height: 18px;
+  color: var(--primary-tint);
 }
 
 .section-label {
@@ -776,5 +806,94 @@ body {
 .legal-link {
   color: var(--primary-tint);
   font-weight: 650;
+}
+
+/* Help */
+.help-intro {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  background: var(--brand-surface);
+  color: var(--brand-cream);
+}
+
+.help-intro-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 44px;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: rgba(0, 214, 189, 0.16);
+  color: var(--brand-aqua);
+}
+
+.help-intro-icon .app-icon {
+  width: 28px;
+  height: 28px;
+}
+
+.help-intro h2,
+.help-section h2 {
+  margin: 0;
+}
+
+.help-intro h2 {
+  font-size: 19px;
+  line-height: 1.25;
+}
+
+.help-intro p {
+  margin: 6px 0 0;
+  color: rgba(255, 245, 214, 0.86);
+  font-size: 15px;
+  line-height: 1.5;
+}
+
+.help-grid {
+  display: grid;
+  gap: 12px;
+}
+
+.help-section h2 {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  color: var(--brand-ink);
+  font-size: 17px;
+  line-height: 1.3;
+}
+
+.help-section h2 .app-icon {
+  width: 21px;
+  height: 21px;
+  color: var(--primary-tint);
+}
+
+.help-section p,
+.help-section li {
+  font-size: 15px;
+  line-height: 1.52;
+}
+
+.help-section p {
+  margin: 10px 0 0;
+  color: var(--text-secondary);
+}
+
+.help-section ul {
+  margin: 10px 0 0;
+  padding-left: 21px;
+  color: var(--text-secondary);
+}
+
+.help-section li + li {
+  margin-top: 7px;
+}
+
+.help-counter-note {
+  border: 1px solid color-mix(in srgb, var(--brand-teal) 24%, transparent);
+  background: color-mix(in srgb, var(--brand-aqua) 7%, white);
 }
 

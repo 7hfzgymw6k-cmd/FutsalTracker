@@ -3,6 +3,20 @@
 The interface uses a consistent dependency-free SVG line-icon system that
 inherits the application theme and remains available offline.
 
+## Help
+
+- The `?` button opens an in-app guide to match setup, clock stoppages,
+  possession changes, passes, accumulated fouls, summaries and offline use.
+
+## Anonymous user counter
+
+- The start screen shows an approximate unique-user count supplied by
+  CounterAPI. No team names or match statistics are sent to the counter.
+- The last successful count is cached locally. Match tracking remains fully
+  available when the network or counter service is unavailable, and the count
+  refreshes the next time the app is online.
+- Local development reads the counter without incrementing it.
+
 ## Team names
 
 - Home and away team names are limited to 12 characters. The limit is enforced

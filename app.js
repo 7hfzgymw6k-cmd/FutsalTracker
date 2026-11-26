@@ -7,7 +7,14 @@
 (() => {
   const STORAGE_KEYS = {
     ACTIVE_MATCH: "futsal_tracker_active_match_v1",
-    LATEST_STATS: "futsal_tracker_latest_statistics_v1"
+    LATEST_STATS: "futsal_tracker_latest_statistics_v1",
+    USER_COUNT: "futsal_tracker_user_count_v1"
+  };
+
+  const USAGE_COUNTER = {
+    endpoint: "https://counterapi.com/api/futsaltracker-saga/install/web-app",
+    localHosts: new Set(["", "localhost", "127.0.0.1", "::1"]),
+    timeoutMs: 4500
   };
 
   const ICON_PATHS = {
@@ -32,7 +39,9 @@
     plus: '<circle cx="12" cy="12" r="9"/><path d="M12 8v8M8 12h8"/>',
     chart: '<path d="M12 3a9 9 0 1 0 9 9h-9V3Z"/><path d="M15 3.5A8.8 8.8 0 0 1 20.5 9H15V3.5Z"/>',
     sequence: '<circle cx="5" cy="12" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="19" cy="12" r="2"/><path d="M7 12h3M14 12h3"/>',
-    info: '<circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/>'
+    info: '<circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/>',
+    help: '<circle cx="12" cy="12" r="9"/><path d="M9.7 9a2.5 2.5 0 1 1 3.8 2.1c-1 .6-1.5 1.1-1.5 2.4"/><path d="M12 17h.01"/>',
+    users: '<path d="M16 20v-1.5a4.5 4.5 0 0 0-4.5-4.5h-4A4.5 4.5 0 0 0 3 18.5V20"/><circle cx="9.5" cy="7.5" r="3.5"/><path d="M17 11a3 3 0 1 0-2.2-5M18 14a4 4 0 0 1 3 3.9V20"/>'
   };
 
   function renderIcon(name, className = "") {
@@ -120,6 +129,98 @@
       .replace(/>/g, "&gt;")
       .replace(/"/g, "&quot;");
   }
+
+  function readCachedUserCount() {
+    try {
+      const cached = localStorage.getItem(STORAGE_KEYS.USER_COUNT);
+      if (cached === null) return null;
+      const value = Number(cached);
+      return Number.isFinite(value) && value >= 0 ? Math.floor(value) : null;
+    } catch {
+      return null;
+    }
+  }
+
+  const UsageCounter = {
+    value: readCachedUserCount(),
+    status: "idle",
+    inFlight: null,
+
+    label() {
+      if (this.value !== null) {
+        const count = new Intl.NumberFormat().format(this.value);
+        const noun = this.value === 1 ? "user" : "users";
+        const suffix = this.status === "offline" ? " · last known" : "";
+        return `Approx. ${count} ${noun}${suffix}`;
+      }
+      return this.status === "loading" ? "Checking user count…" : "User count available online";
+    },
+
+    render() {
+      return `
+        <div class="usage-counter" title="Approximate anonymous users counted while online">
+          ${renderIcon("users")}
+          <span data-user-count aria-live="polite">${escapeHTML(this.label())}</span>
+        </div>
+      `;
+    },
+
+    updateVisibleLabels() {
+      document.querySelectorAll("[data-user-count]").forEach(element => {
+        element.textContent = this.label();
+      });
+    },
+
+    async refresh() {
+      if (this.inFlight) return this.inFlight;
+      if (navigator.onLine === false) {
+        this.status = "offline";
+        this.updateVisibleLabels();
+        return null;
+      }
+
+      this.status = "loading";
+      this.updateVisibleLabels();
+      this.inFlight = (async () => {
+        const controller = new AbortController();
+        const timeoutID = setTimeout(() => controller.abort(), USAGE_COUNTER.timeoutMs);
+        try {
+          const params = new URLSearchParams({ unique: "true" });
+          if (USAGE_COUNTER.localHosts.has(window.location.hostname)) {
+            params.set("readOnly", "true");
+          }
+          const response = await fetch(`${USAGE_COUNTER.endpoint}?${params}`, {
+            method: "GET",
+            mode: "cors",
+            cache: "no-store",
+            credentials: "omit",
+            referrerPolicy: "no-referrer",
+            signal: controller.signal
+          });
+          if (!response.ok) throw new Error(`Counter returned ${response.status}`);
+          const payload = await response.json();
+          const nextValue = Number(payload.value);
+          if (!Number.isFinite(nextValue) || nextValue < 0) throw new Error("Invalid counter value");
+          this.value = Math.floor(nextValue);
+          this.status = "ready";
+          try {
+            localStorage.setItem(STORAGE_KEYS.USER_COUNT, String(this.value));
+          } catch {
+            // The visible count still works when storage is unavailable.
+          }
+          return this.value;
+        } catch {
+          this.status = navigator.onLine === false ? "offline" : "unavailable";
+          return null;
+        } finally {
+          clearTimeout(timeoutID);
+          this.inFlight = null;
+          this.updateVisibleLabels();
+        }
+      })();
+      return this.inFlight;
+    }
+  };
 
   const MatchLogic = {
     isClockRunning(match) {
@@ -496,6 +597,7 @@
     latestStatistics: null,
     viewingArchived: false,
     viewingLegal: false,
+    viewingHelp: false,
     sharedMatch: null,
     setupDraft: { home: "", away: "" },
 
@@ -805,6 +907,7 @@
 
     container.innerHTML = `
       ${renderBrandHeader(false)}
+      ${UsageCounter.render()}
 
       <div>
         <div class="section-label">Teams</div>
@@ -1199,7 +1302,7 @@
       <div class="card stack-10">
         <div>
           <strong>Futsal Tracker</strong>
-          <div class="log-sub">Web App Edition · Version 1.0 (1)</div>
+          <div class="log-sub">Web App Edition · Version 1.1 (2)</div>
         </div>
         <hr style="border:none;border-top:1px solid var(--border-color);width:100%;" />
         <div>
@@ -1212,12 +1315,84 @@
           <p class="legal-text">All match statistics are stored locally on your device. Shared match links encode match data directly inside the URL without external servers.</p>
           <p class="legal-text"><a class="legal-link" href="LICENSE.txt" target="_blank" rel="license noopener">Read the full personal-use license</a></p>
         </div>
+        <hr style="border:none;border-top:1px solid var(--border-color);width:100%;" />
+        <div>
+          <strong>Anonymous Usage Counter</strong>
+          <p class="legal-text">While online, the app requests an approximate unique-user count from CounterAPI. CounterAPI derives an anonymized user hash; Futsal Tracker does not send team names, match statistics, or an app-generated device identifier. The last count is cached locally so the tracker keeps working when offline.</p>
+          <p class="legal-text"><a class="legal-link" href="https://counterapi.com/" target="_blank" rel="noopener noreferrer">About CounterAPI</a></p>
+        </div>
+      </div>
+    `;
+  }
+
+  function renderHelpView(container) {
+    document.getElementById("nav-title").textContent = "Help";
+    const backBtn = document.getElementById("back-btn");
+    backBtn.classList.remove("hidden");
+    backBtn.onclick = () => {
+      Store.viewingHelp = false;
+      render();
+    };
+
+    container.innerHTML = `
+      <div class="help-intro card">
+        <div class="help-intro-icon">${renderIcon("help")}</div>
+        <div>
+          <h2>Track a futsal match as it happens</h2>
+          <p>Set the teams, start the clock, then tap the event buttons. The app saves the current match automatically on this device.</p>
+        </div>
+      </div>
+
+      <div class="help-grid">
+        <section class="card help-section">
+          <h2>${renderIcon("play")}<span>Start and clock</span></h2>
+          <ul>
+            <li>The home team starts with possession.</li>
+            <li>Start the clock once. After that, tapping any match-event button also resumes a paused clock.</li>
+            <li>A Goal, Corner, Foul or Free Kick 10m stops the clock. Tap the next event or the clock to resume.</li>
+            <li>Starting the second half resets its clock and foul count to zero.</li>
+          </ul>
+        </section>
+
+        <section class="card help-section">
+          <h2>${renderIcon("pass")}<span>Passes and possession</span></h2>
+          <ul>
+            <li>Tap Pass for the team in possession to extend its successful pass sequence.</li>
+            <li>Tap the other team’s Pass when it wins the ball. This records a turnover for the previous team and changes possession.</li>
+            <li>A Goal or Foul also gives possession to the other team.</li>
+            <li>The score-area color shows the team in possession; after a goal it highlights the scoring team until the next event.</li>
+          </ul>
+        </section>
+
+        <section class="card help-section">
+          <h2>${renderIcon("foul")}<span>Fouls and Free Kick 10m</span></h2>
+          <p>Fouls accumulate separately in each half. Fouls 1–5 are counted normally; the 6th foul and every foul after it also awards a Free Kick 10m to the opponent.</p>
+        </section>
+
+        <section class="card help-section">
+          <h2>${renderIcon("chart")}<span>Statistics and sharing</span></h2>
+          <ul>
+            <li>The summary separates both halves and the whole match, including time-based possession, goals/shots and highest pass sequences.</li>
+            <li>Each goal records how many successful passes preceded it.</li>
+            <li>Share a text summary or an interactive link. Match data remains local unless you choose to share it.</li>
+            <li>Latest statistics are kept if you accidentally start a new match.</li>
+          </ul>
+        </section>
+
+        <section class="card help-section help-counter-note">
+          <h2>${renderIcon("users")}<span>User count and offline use</span></h2>
+          <p>The start screen shows an approximate anonymous user count. It updates online and displays the last known count offline. Tracking matches, saving statistics and using the clock continue without a network connection once the app has been cached.</p>
+        </section>
       </div>
     `;
   }
 
   function render() {
     const container = document.getElementById("view-container");
+    if (Store.viewingHelp) {
+      renderHelpView(container);
+      return;
+    }
     if (Store.viewingLegal) {
       renderLegalView(container);
       return;
@@ -1239,7 +1414,7 @@
   }
 
   setInterval(() => {
-    if (!Store.viewingLegal && !Store.viewingArchived && Store.match?.status === "active" && MatchLogic.isClockRunning(Store.match)) {
+    if (!Store.viewingHelp && !Store.viewingLegal && !Store.viewingArchived && Store.match?.status === "active" && MatchLogic.isClockRunning(Store.match)) {
       const clockBtn = document.getElementById("clock-tap-btn");
       if (clockBtn) {
         clockBtn.textContent = formatMatchTime(MatchLogic.elapsedTime(Store.match));
@@ -1247,8 +1422,15 @@
     }
   }, 250);
 
+  document.getElementById("help-btn").addEventListener("click", () => {
+    Store.viewingHelp = !Store.viewingHelp;
+    if (Store.viewingHelp) Store.viewingLegal = false;
+    render();
+  });
+
   document.getElementById("legal-btn").addEventListener("click", () => {
     Store.viewingLegal = !Store.viewingLegal;
+    if (Store.viewingLegal) Store.viewingHelp = false;
     render();
   });
 
@@ -1258,6 +1440,7 @@
       Store.sharedMatch = incoming;
       Store.viewingArchived = true;
       Store.viewingLegal = false;
+      Store.viewingHelp = false;
       render();
     }
   });
@@ -1268,4 +1451,6 @@
 
   Store.init();
   render();
+  UsageCounter.refresh();
+  window.addEventListener("online", () => UsageCounter.refresh());
 })();
