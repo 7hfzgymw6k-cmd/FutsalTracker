@@ -56,6 +56,28 @@
   const RECORDABLE_TYPES = ["goal", "shot", "foul", "corner", "pass"];
   const SUMMARY_TYPES = ["goal", "shot", "foul", "corner", "pass", "turnover", "freeKick10m"];
   const CLOCK_STOPPAGE_TYPES = new Set(["goal", "corner", "foul", "freeKick10m"]);
+  const TEAM_NAME_MAX_LENGTH = 12;
+  const TEAM_NAME_SEGMENTER = typeof Intl !== "undefined" && typeof Intl.Segmenter === "function"
+    ? new Intl.Segmenter(undefined, { granularity: "grapheme" })
+    : null;
+
+  function truncateTeamName(value, trim = false) {
+    const text = trim ? String(value ?? "").trim() : String(value ?? "");
+    const characters = TEAM_NAME_SEGMENTER
+      ? Array.from(TEAM_NAME_SEGMENTER.segment(text), item => item.segment)
+      : Array.from(text);
+    return characters.slice(0, TEAM_NAME_MAX_LENGTH).join("");
+  }
+
+  function normalizeTeamName(value) {
+    return truncateTeamName(value, true);
+  }
+
+  function normalizeMatchTeamNames(match) {
+    if (match?.homeTeam) match.homeTeam.name = normalizeTeamName(match.homeTeam.name);
+    if (match?.awayTeam) match.awayTeam.name = normalizeTeamName(match.awayTeam.name);
+    return match;
+  }
 
   function generateUUID() {
     if (crypto && crypto.randomUUID) return crypto.randomUUID();
@@ -76,6 +98,11 @@
   function formatPassCount(count) {
     const value = Math.max(0, Math.floor(Number(count) || 0));
     return `${value} ${value === 1 ? "pass" : "passes"}`;
+  }
+
+  function formatGoalShotComparison(comparison) {
+    const ratio = `${comparison.goals}/${comparison.shots}`;
+    return comparison.percentage === null ? ratio : `${ratio} (${comparison.percentage}%)`;
   }
 
   function formatDate(isoString) {
@@ -168,6 +195,15 @@
 
     score(match, teamID, half = null) {
       return this.totals(match, teamID, half).goal;
+    },
+
+    goalShotComparison(match, teamID, half = null) {
+      const totals = this.totals(match, teamID, half);
+      return {
+        goals: totals.goal,
+        shots: totals.shot,
+        percentage: totals.shot > 0 ? Math.round((totals.goal / totals.shot) * 100) : null
+      };
     },
 
     visibleEvents(match) {
@@ -340,11 +376,14 @@
       const homeTotals = MatchLogic.totals(match, match.homeTeam.id, half);
       const awayTotals = MatchLogic.totals(match, match.awayTeam.id, half);
       const poss = MatchLogic.roundedPossessionPercentages(match, half);
+      const homeGoalShots = MatchLogic.goalShotComparison(match, match.homeTeam.id, half);
+      const awayGoalShots = MatchLogic.goalShotComparison(match, match.awayTeam.id, half);
 
       lines.push(title);
       lines.push(
         `${match.homeTeam.name} ${MatchLogic.score(match, match.homeTeam.id, half)}–${MatchLogic.score(match, match.awayTeam.id, half)} ${match.awayTeam.name}`
       );
+      lines.push(`Goals / Total Shots: ${formatGoalShotComparison(homeGoalShots)}–${formatGoalShotComparison(awayGoalShots)}`);
       lines.push(`Possession: ${poss.home}%–${poss.away}%`);
       lines.push(
         `Highest Pass Sequence: ${MatchLogic.highestSuccessfulPassSequence(match, match.homeTeam.id, half)}–${MatchLogic.highestSuccessfulPassSequence(match, match.awayTeam.id, half)}`
@@ -422,7 +461,7 @@
       for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
       const json = new TextDecoder().decode(bytes);
       const c = JSON.parse(json);
-      return {
+      return normalizeMatchTeamNames({
         id: c.id || generateUUID(),
         homeTeam: c.h,
         awayTeam: c.a,
@@ -445,7 +484,7 @@
           successfulPassSequence: e.ps ?? null,
           passesBeforeGoal: e.pg ?? null
         }))
-      };
+      });
     } catch (err) {
       console.error("Failed to decode shared match link:", err);
       return null;
@@ -463,14 +502,14 @@
     init() {
       try {
         const savedActive = localStorage.getItem(STORAGE_KEYS.ACTIVE_MATCH);
-        if (savedActive) this.match = JSON.parse(savedActive);
+        if (savedActive) this.match = normalizeMatchTeamNames(JSON.parse(savedActive));
       } catch (e) {
         this.match = null;
       }
 
       try {
         const savedLatest = localStorage.getItem(STORAGE_KEYS.LATEST_STATS);
-        if (savedLatest) this.latestStatistics = JSON.parse(savedLatest);
+        if (savedLatest) this.latestStatistics = normalizeMatchTeamNames(JSON.parse(savedLatest));
         if (!this.latestStatistics && this.match && this.match.status === "finished") {
           this.latestStatistics = this.match;
           localStorage.setItem(STORAGE_KEYS.LATEST_STATS, JSON.stringify(this.match));
@@ -505,8 +544,8 @@
     },
 
     startMatch(homeName, awayName) {
-      const h = homeName.trim();
-      const a = awayName.trim();
+      const h = normalizeTeamName(homeName);
+      const a = normalizeTeamName(awayName);
       if (!h || !a) return;
 
       this.match = {
@@ -771,13 +810,13 @@
         <div class="section-label">Teams</div>
         <div class="input-group">
           <div class="input-row">
-            <input id="home-input" class="text-input" type="text" placeholder="Home team" autocapitalize="words" value="${escapeHTML(Store.setupDraft.home)}" />
+            <input id="home-input" class="text-input" type="text" placeholder="Home team" autocapitalize="words" aria-describedby="team-name-help" value="${escapeHTML(truncateTeamName(Store.setupDraft.home))}" />
           </div>
           <div class="input-row">
-            <input id="away-input" class="text-input" type="text" placeholder="Away team" autocapitalize="words" value="${escapeHTML(Store.setupDraft.away)}" />
+            <input id="away-input" class="text-input" type="text" placeholder="Away team" autocapitalize="words" aria-describedby="team-name-help" value="${escapeHTML(truncateTeamName(Store.setupDraft.away))}" />
           </div>
         </div>
-        <div class="section-footer">The match is saved on this device. Tap the clock to start play.</div>
+        <div id="team-name-help" class="section-footer">Team names can contain up to ${TEAM_NAME_MAX_LENGTH} characters. The match is saved on this device.</div>
       </div>
 
       <button id="start-match-btn" class="btn btn-primary" disabled>${renderIcon("play")}<span>Start Match</span></button>
@@ -790,6 +829,8 @@
     const startBtn = document.getElementById("start-match-btn");
 
     const updateStartState = () => {
+      homeInput.value = truncateTeamName(homeInput.value);
+      awayInput.value = truncateTeamName(awayInput.value);
       Store.setupDraft.home = homeInput.value;
       Store.setupDraft.away = awayInput.value;
       startBtn.disabled = !homeInput.value.trim() || !awayInput.value.trim();
@@ -991,6 +1032,8 @@
       const poss = MatchLogic.roundedPossessionPercentages(match, half);
       const homeSeq = MatchLogic.highestSuccessfulPassSequence(match, match.homeTeam.id, half);
       const awaySeq = MatchLogic.highestSuccessfulPassSequence(match, match.awayTeam.id, half);
+      const homeGoalShots = MatchLogic.goalShotComparison(match, match.homeTeam.id, half);
+      const awayGoalShots = MatchLogic.goalShotComparison(match, match.awayTeam.id, half);
 
       const rows = SUMMARY_TYPES.map(
         type => `
@@ -1015,6 +1058,17 @@
                 </tr>
               </thead>
               <tbody>
+                <tr>
+                  <td><span class="table-label">${renderIcon("shot")}<span>Goals / Total Shots</span></span></td>
+                  <td class="goal-shot-cell">
+                    <strong>${homeGoalShots.goals} / ${homeGoalShots.shots}</strong>
+                    ${homeGoalShots.percentage === null ? "" : `<span>${homeGoalShots.percentage}%</span>`}
+                  </td>
+                  <td class="goal-shot-cell">
+                    <strong>${awayGoalShots.goals} / ${awayGoalShots.shots}</strong>
+                    ${awayGoalShots.percentage === null ? "" : `<span>${awayGoalShots.percentage}%</span>`}
+                  </td>
+                </tr>
                 <tr>
                   <td><span class="table-label">${renderIcon("chart")}<span>Possession</span></span></td>
                   <td>${poss.home}%</td>

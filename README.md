@@ -3,12 +3,24 @@
 The interface uses a consistent dependency-free SVG line-icon system that
 inherits the application theme and remains available offline.
 
+## Team names
+
+- Home and away team names are limited to 12 characters. The limit is enforced
+  for new input, restored local matches, and incoming shared match links.
+
 ## Passes before each goal
 
 - Every Goal records the scoring team's successful pass-sequence length
   immediately before the goal. The match summary shows the score progression
   for every goal, for example `2–1 (6 passes)`. The same goal progression is
   included in shared text and interactive match links.
+
+## Goals and total shots
+
+- Whole-match, first-half and second-half summary cards compare Goals against
+  Total Shots for each team and show the resulting conversion percentage.
+  Goals are included in Total Shots. Shared-text summaries include the same
+  comparison.
 
 ## Score background behavior
 

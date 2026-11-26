@@ -643,6 +643,27 @@ body {
   color: var(--primary-tint);
 }
 
+.stats-table .goal-shot-cell {
+  width: 76px;
+  white-space: nowrap;
+}
+
+.goal-shot-cell strong,
+.goal-shot-cell span {
+  display: block;
+}
+
+.goal-shot-cell strong {
+  font-size: 14px;
+}
+
+.goal-shot-cell span {
+  margin-top: 2px;
+  color: var(--text-secondary);
+  font-size: 12px;
+  font-weight: 600;
+}
+
 .log-item {
   display: flex;
   justify-content: space-between;
