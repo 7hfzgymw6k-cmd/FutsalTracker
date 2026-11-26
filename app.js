@@ -1057,7 +1057,7 @@
             <div class="clock-center">
               <div class="clock-meta">
                 <span class="half-label">${renderIcon("court")}<span>Half ${match.currentHalf}</span></span>
-                <span class="clock-status-dot ${isRunning ? "running" : "paused"}" title="${isRunning ? "Running" : "Paused"}"></span>
+                <span class="clock-status-dot ${isRunning ? "running" : "paused"}" role="img" aria-label="Clock ${isRunning ? "running" : "paused"}" title="Clock ${isRunning ? "running" : "paused"}"></span>
               </div>
               <button id="clock-tap-btn" class="clock-btn" aria-label="${isRunning ? "Pause" : "Start or resume"} match clock">${formatMatchTime(MatchLogic.elapsedTime(match))}</button>
             </div>
@@ -1313,7 +1313,7 @@
       <div class="card stack-10">
         <div>
           <strong>Futsal Tracker</strong>
-          <div class="log-sub">Web App Edition · Version 1.2.2 (5)</div>
+          <div class="log-sub">Web App Edition · Version 1.3.1 (7)</div>
         </div>
         <hr style="border:none;border-top:1px solid var(--border-color);width:100%;" />
         <div>
@@ -1462,7 +1462,32 @@
   });
 
   if ("serviceWorker" in navigator) {
-    navigator.serviceWorker.register("./sw.js").catch(() => {});
+    const hadServiceWorkerController = Boolean(navigator.serviceWorker.controller);
+    let reloadingForUpdate = false;
+
+    navigator.serviceWorker.addEventListener("controllerchange", () => {
+      if (!hadServiceWorkerController || reloadingForUpdate) return;
+      showModal({
+        title: "New version available",
+        message: "Update now to use the latest version. Your current match is saved on this device.",
+        actions: [
+          {
+            label: "Update Now",
+            style: "btn-primary",
+            onClick: () => {
+              reloadingForUpdate = true;
+              window.location.reload();
+            }
+          },
+          { label: "Later", style: "btn-secondary" }
+        ]
+      });
+    });
+
+    navigator.serviceWorker
+      .register("./sw.js", { updateViaCache: "none" })
+      .then(registration => registration.update())
+      .catch(() => {});
   }
 
   Store.init();

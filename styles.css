@@ -21,7 +21,7 @@
   --away-team: var(--brand-ink);
   --away-team-fg: var(--brand-cream);
 
-  --clock-running: var(--brand-teal);
+  --clock-running: #dc2626;
   --clock-paused: rgba(0, 51, 46, 0.62);
 
   --bg-page: #f2f4f3;
@@ -425,18 +425,20 @@ input:focus-visible {
 }
 
 .clock-status-dot {
-  width: 12px;
-  height: 12px;
+  width: 14px;
+  height: 14px;
   border-radius: 50%;
 }
 
 .clock-status-dot.running {
   background: var(--clock-running);
-  box-shadow: 0 0 0 4px rgba(0, 110, 99, 0.2);
+  border: 2px solid #ffffff;
+  box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.28);
 }
 
 .clock-status-dot.paused {
-  background: var(--clock-paused);
+  background: #ffffff;
+  border: 2px solid var(--clock-paused);
 }
 
 /* Two-Column Team Action Buttons */

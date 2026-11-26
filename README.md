@@ -19,6 +19,18 @@ inherits the application theme and remains available offline.
   refreshes the next time the app is online.
 - Local development reads the counter without incrementing it.
 
+## Application updates
+
+- GitHub Pages deployments are checked when the app opens. Service-worker
+  update checks bypass the HTTP cache so a changed `sw.js` can be discovered
+  promptly.
+- If a new version takes control while an older version is open, the app shows
+  **New version available** with **Update Now** and **Later** actions.
+- **Update Now** reloads the app into the latest cached release. The active
+  match is already stored locally, so reloading does not discard its state.
+- **Later** leaves the current screen uninterrupted. The latest version is
+  used after the user next reloads or reopens the app.
+
 ## Team names
 
 - Home and away team names are limited to 12 characters. The limit is enforced
@@ -71,5 +83,8 @@ inherits the application theme and remains available offline.
   positions and team colors identify the corresponding controls.
 - The clock always has a white background and does not change color with
   possession.
+- A solid red circle with a light outer ring indicates that the clock is
+  running. A neutral white circle with a dark outline indicates that it is
+  paused.
 - Possession is communicated by the panel background color without a separate
   text indicator.
