@@ -22,6 +22,7 @@
     shot: '<circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="3"/><path d="M12 3v3M12 18v3M3 12h3M18 12h3"/>',
     foul: '<path d="M12 3 21 8v6c0 4.5-3.8 7-9 8-5.2-1-9-3.5-9-8V8l9-5Z"/><path d="M12 8v5M12 16h.01"/>',
     corner: '<path d="M5 21V4M5 5h10l-2.5 4L15 13H5"/>',
+    kickIn: '<path d="M4 3v18"/><path d="M8 12h5"/><path d="m10 9-3 3 3 3"/><circle cx="17" cy="12" r="3"/>',
     pass: '<circle cx="5" cy="12" r="2.25"/><circle cx="19" cy="12" r="2.25"/><path d="M7.5 12h9"/>',
     possession: '<circle cx="7" cy="12" r="2"/><circle cx="17" cy="12" r="2"/><path d="M9 8.5c2-1.5 4-1.5 6 0M15 15.5c-2 1.5-4 1.5-6 0"/>',
     turnover: '<path d="M6 7h9a4 4 0 0 1 0 8H9"/><path d="m9 11-4 4 4 4"/>',
@@ -55,6 +56,7 @@
     shot: { title: "Shot", icon: "shot" },
     foul: { title: "Foul", icon: "foul" },
     corner: { title: "Corner", icon: "corner" },
+    kickIn: { title: "Kick-in", icon: "kickIn" },
     pass: { title: "Pass", icon: "pass" },
     possessionChange: { title: "Possession", icon: "possession" },
     lostBall: { title: "Turnover", icon: "turnover" },
@@ -62,9 +64,9 @@
     freeKick10m: { title: "Free Kick 10m", icon: "freeKick10m" }
   };
 
-  const RECORDABLE_TYPES = ["goal", "shot", "foul", "corner", "pass"];
-  const SUMMARY_TYPES = ["goal", "shot", "foul", "corner", "pass", "turnover", "freeKick10m"];
-  const CLOCK_STOPPAGE_TYPES = new Set(["goal", "corner", "foul", "freeKick10m"]);
+  const RECORDABLE_TYPES = ["goal", "shot", "foul", "corner", "kickIn", "pass"];
+  const SUMMARY_TYPES = ["goal", "shot", "foul", "corner", "kickIn", "pass", "turnover", "freeKick10m"];
+  const CLOCK_STOPPAGE_TYPES = new Set(["goal", "corner", "kickIn", "foul", "freeKick10m"]);
   const TEAM_NAME_MAX_LENGTH = 12;
   const TEAM_NAME_SEGMENTER = typeof Intl !== "undefined" && typeof Intl.Segmenter === "function"
     ? new Intl.Segmenter(undefined, { granularity: "grapheme" })
@@ -275,6 +277,7 @@
         shot: 0,
         foul: 0,
         corner: 0,
+        kickIn: 0,
         pass: 0,
         possessionChange: 0,
         lostBall: 0,
@@ -748,7 +751,7 @@
         appendEvent("goal", teamID, null, passesBeforeGoal);
         const oppID = MatchLogic.opponentID(m, teamID);
         if (oppID) appendPossessionIfNeeded(oppID);
-      } else if (type === "shot" || type === "corner") {
+      } else if (type === "shot" || type === "corner" || type === "kickIn") {
         appendEvent(type, teamID);
       }
 
@@ -983,7 +986,6 @@
     document.getElementById("back-btn").classList.add("hidden");
 
     const isRunning = MatchLogic.isClockRunning(match);
-    const possID = MatchLogic.currentPossessionTeamID(match);
     const scoringTeamID = MatchLogic.scoringTeamIDForLatestAction(match);
     const scoreboardTeamID = MatchLogic.scoreboardTeamID(match);
     const isAwayScoreboard = scoreboardTeamID === match.awayTeam.id;
@@ -1007,7 +1009,6 @@
 
       return `
         <div class="team-column">
-          <div class="team-col-header">${escapeHTML(team.name)}</div>
           ${buttonsHTML}
         </div>
       `;
@@ -1040,20 +1041,22 @@
         : "";
 
     container.innerHTML = `
-      <div class="card">
+      <div class="card match-console-card">
         ${renderBrandHeader(true)}
-        <div class="scoreboard-banner ${isAwayScoreboard ? "away-possession" : "home-possession"} ${scoringTeamID ? "goal-highlight" : ""}">
-          <div class="team-banner-name">${escapeHTML(match.homeTeam.name)}</div>
+        <div class="score-clock-panel ${isAwayScoreboard ? "away-possession" : "home-possession"} ${scoringTeamID ? "goal-highlight" : ""}">
+          <div class="score-clock-row">
+            <div class="team-banner-name">${escapeHTML(match.homeTeam.name)}</div>
+            <div class="clock-center">
+              <div class="clock-meta">
+                <span class="half-label">${renderIcon("court")}<span>Half ${match.currentHalf}</span></span>
+                <span class="clock-status-dot ${isRunning ? "running" : "paused"}" title="${isRunning ? "Running" : "Paused"}"></span>
+              </div>
+              <button id="clock-tap-btn" class="clock-btn" aria-label="${isRunning ? "Pause" : "Start or resume"} match clock">${formatMatchTime(MatchLogic.elapsedTime(match))}</button>
+            </div>
+            <div class="team-banner-name">${escapeHTML(match.awayTeam.name)}</div>
+          </div>
           <div class="score-digits">${homeScore}–${awayScore}</div>
-          <div class="team-banner-name">${escapeHTML(match.awayTeam.name)}</div>
         </div>
-        <div class="possession-pill">Possession: ${escapeHTML(MatchLogic.teamName(match, possID))}</div>
-      </div>
-
-      <div class="card clock-bar">
-        <span class="half-label">${renderIcon("court")}<span>Half ${match.currentHalf}</span></span>
-        <button id="clock-tap-btn" class="clock-btn">${formatMatchTime(MatchLogic.elapsedTime(match))}</button>
-        <span class="clock-status-dot ${isRunning ? "running" : "paused"}" title="${isRunning ? "Running" : "Paused"}"></span>
       </div>
 
       <div class="columns-grid">
@@ -1302,7 +1305,7 @@
       <div class="card stack-10">
         <div>
           <strong>Futsal Tracker</strong>
-          <div class="log-sub">Web App Edition · Version 1.1 (2)</div>
+          <div class="log-sub">Web App Edition · Version 1.2.1 (4)</div>
         </div>
         <hr style="border:none;border-top:1px solid var(--border-color);width:100%;" />
         <div>
@@ -1349,9 +1352,14 @@
           <ul>
             <li>The home team starts with possession.</li>
             <li>Start the clock once. After that, tapping any match-event button also resumes a paused clock.</li>
-            <li>A Goal, Corner, Foul or Free Kick 10m stops the clock. Tap the next event or the clock to resume.</li>
+            <li>A Goal, Corner, Kick-in, Foul or Free Kick 10m stops the clock. Tap the next event or the clock to resume.</li>
             <li>Starting the second half resets its clock and foul count to zero.</li>
           </ul>
+        </section>
+
+        <section class="card help-section">
+          <h2>${renderIcon("kickIn")}<span>Kick-ins</span></h2>
+          <p>When the ball goes out of court, tap Kick-in for the team awarded the kick-in. Like a Corner, this records the event and stops the clock; the next event tap resumes it.</p>
         </section>
 
         <section class="card help-section">

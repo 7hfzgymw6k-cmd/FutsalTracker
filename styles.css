@@ -312,28 +312,28 @@ input:focus-visible {
   gap: 8px;
 }
 
-/* Live Match Header */
-.scoreboard-banner {
-  display: grid;
-  grid-template-columns: 1fr auto 1fr;
-  align-items: center;
-  gap: 10px;
-  padding: 12px;
+/* Combined Live Score and Clock */
+.match-console-card {
+  padding-bottom: 14px;
+}
+
+.score-clock-panel {
+  padding: 10px 12px 11px;
   border-radius: 14px;
   transition: background-color 0.2s ease, color 0.2s ease;
 }
 
-.scoreboard-banner.home-possession {
+.score-clock-panel.home-possession {
   background: var(--home-team);
   color: var(--home-team-fg);
 }
 
-.scoreboard-banner.away-possession {
+.score-clock-panel.away-possession {
   background: var(--away-team);
   color: var(--away-team-fg);
 }
 
-.scoreboard-banner.goal-highlight {
+.score-clock-panel.goal-highlight {
   animation: goal-highlight 420ms ease-out;
   box-shadow: 0 0 0 3px color-mix(in srgb, currentColor 24%, transparent);
 }
@@ -350,39 +350,47 @@ input:focus-visible {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .scoreboard-banner.goal-highlight {
+  .score-clock-panel.goal-highlight {
     animation: none;
   }
 }
 
+.score-clock-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+  align-items: center;
+  gap: 8px;
+}
+
+.clock-center {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.clock-meta {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+}
+
 .team-banner-name {
+  min-width: 0;
   font-size: 16px;
   font-weight: 700;
   text-align: center;
-  word-break: break-word;
+  overflow-wrap: anywhere;
 }
 
 .score-digits {
+  margin-top: 5px;
   font-size: 40px;
   font-weight: 800;
   font-variant-numeric: tabular-nums;
   line-height: 1;
-}
-
-.possession-pill {
   text-align: center;
-  font-size: 12px;
-  font-weight: 600;
-  margin-top: 8px;
-  color: var(--text-secondary);
-}
-
-.clock-bar {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 16px;
-  padding: 12px 16px;
 }
 
 .half-label {
@@ -399,9 +407,13 @@ input:focus-visible {
   color: var(--primary-tint);
 }
 
+.score-clock-panel .half-label .app-icon {
+  color: currentColor;
+}
+
 .clock-btn {
-  background: var(--subtle-surface);
-  border: none;
+  background: #ffffff;
+  border: 1px solid rgba(0, 51, 46, 0.12);
   border-radius: 10px;
   padding: 6px 14px;
   font-size: 24px;
@@ -409,6 +421,7 @@ input:focus-visible {
   font-variant-numeric: tabular-nums;
   color: var(--text-primary);
   cursor: pointer;
+  box-shadow: 0 1px 2px rgba(0, 51, 46, 0.12);
 }
 
 .clock-status-dot {
@@ -437,15 +450,6 @@ input:focus-visible {
   display: flex;
   flex-direction: column;
   gap: 10px;
-}
-
-.team-col-header {
-  text-align: center;
-  font-size: 15px;
-  font-weight: 700;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
 }
 
 .event-btn {
