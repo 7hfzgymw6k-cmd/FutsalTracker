@@ -73,6 +73,11 @@
     return `${String(mins).padStart(2, "0")}:${String(secs).padStart(2, "0")}`;
   }
 
+  function formatPassCount(count) {
+    const value = Math.max(0, Math.floor(Number(count) || 0));
+    return `${value} ${value === 1 ? "pass" : "passes"}`;
+  }
+
   function formatDate(isoString) {
     const date = new Date(isoString);
     return date.toLocaleString(undefined, {
@@ -170,6 +175,9 @@
     },
 
     eventLogTitle(ev) {
+      if (ev.type === "goal" && Number.isFinite(ev.passesBeforeGoal)) {
+        return `Goal (${formatPassCount(ev.passesBeforeGoal)})`;
+      }
       if (ev.type === "pass" && ev.successfulPassSequence >= 5) {
         return `Pass (${ev.successfulPassSequence})`;
       }
@@ -203,6 +211,41 @@
         }
       }
       return maxSeq;
+    },
+
+    passCountBeforeGoal(match, goalIndex) {
+      const goal = match.events[goalIndex];
+      if (!goal || goal.type !== "goal") return 0;
+      if (Number.isFinite(goal.passesBeforeGoal)) {
+        return Math.max(0, Math.floor(goal.passesBeforeGoal));
+      }
+      for (let i = goalIndex - 1; i >= 0; i--) {
+        const event = match.events[i];
+        if (event.half !== goal.half || event.type === "possessionChange") return 0;
+        if (event.type === "pass" && event.teamID === goal.teamID) {
+          return Math.max(0, Math.floor(event.successfulPassSequence || 0));
+        }
+      }
+      return 0;
+    },
+
+    goalProgression(match) {
+      let homeScore = 0;
+      let awayScore = 0;
+      const goals = [];
+      for (let i = 0; i < match.events.length; i++) {
+        const event = match.events[i];
+        if (event.type !== "goal") continue;
+        if (event.teamID === match.homeTeam.id) homeScore += 1;
+        if (event.teamID === match.awayTeam.id) awayScore += 1;
+        goals.push({
+          event,
+          homeScore,
+          awayScore,
+          passesBeforeGoal: this.passCountBeforeGoal(match, i)
+        });
+      }
+      return goals;
     },
 
     durationOfHalf(match, half, nowMs = Date.now()) {
@@ -282,6 +325,17 @@
       ""
     ];
 
+    const goals = MatchLogic.goalProgression(match);
+    if (goals.length > 0) {
+      lines.push("Goals");
+      for (const goal of goals) {
+        lines.push(
+          `H${goal.event.half} ${formatMatchTime(goal.event.matchTime)} · ${MatchLogic.teamName(match, goal.event.teamID)} · ${goal.homeScore}–${goal.awayScore} (${formatPassCount(goal.passesBeforeGoal)})`
+        );
+      }
+      lines.push("");
+    }
+
     const appendStats = (title, half) => {
       const homeTotals = MatchLogic.totals(match, match.homeTeam.id, half);
       const awayTotals = MatchLogic.totals(match, match.awayTeam.id, half);
@@ -344,7 +398,8 @@
         h: e.half,
         mt: Number(e.matchTime.toFixed(2)),
         ra: e.recordedAt,
-        ps: e.successfulPassSequence || undefined
+        ps: e.successfulPassSequence || undefined,
+        pg: Number.isFinite(e.passesBeforeGoal) ? e.passesBeforeGoal : undefined
       }))
     };
     const json = JSON.stringify(compact);
@@ -387,7 +442,8 @@
           half: e.h,
           matchTime: e.mt || 0,
           recordedAt: e.ra || new Date().toISOString(),
-          successfulPassSequence: e.ps ?? null
+          successfulPassSequence: e.ps ?? null,
+          passesBeforeGoal: e.pg ?? null
         }))
       };
     } catch (err) {
@@ -503,7 +559,7 @@
       const actionID = generateUUID();
       let actionStopsClock = false;
 
-      const appendEvent = (evType, evTeamID, passSeq = null) => {
+      const appendEvent = (evType, evTeamID, passSeq = null, passesBeforeGoal = null) => {
         if (CLOCK_STOPPAGE_TYPES.has(evType)) {
           actionStopsClock = true;
         }
@@ -515,7 +571,8 @@
           half: m.currentHalf,
           matchTime: eventTime,
           recordedAt: nowISO,
-          successfulPassSequence: passSeq
+          successfulPassSequence: passSeq,
+          passesBeforeGoal
         });
       };
 
@@ -546,7 +603,8 @@
           appendPossessionIfNeeded(teamID);
         }
       } else if (type === "goal") {
-        appendEvent("goal", teamID);
+        const passesBeforeGoal = MatchLogic.currentSuccessfulPassSequence(m, teamID, m.currentHalf);
+        appendEvent("goal", teamID, null, passesBeforeGoal);
         const oppID = MatchLogic.opponentID(m, teamID);
         if (oppID) appendPossessionIfNeeded(oppID);
       } else if (type === "shot" || type === "corner") {
@@ -753,6 +811,28 @@
     }
   }
 
+  function renderGoalSummary(match) {
+    const goalProgression = MatchLogic.goalProgression(match);
+    if (goalProgression.length === 0) return "";
+    return `
+      <div class="goal-summary">
+        <div class="goal-summary-heading">Goals</div>
+        ${goalProgression.map(goal => `
+          <div class="goal-summary-row">
+            <div class="goal-summary-team">
+              ${renderIcon("goal")}
+              <span>
+                <strong>${escapeHTML(MatchLogic.teamName(match, goal.event.teamID))}</strong>
+                <span class="goal-summary-time">H${goal.event.half} ${formatMatchTime(goal.event.matchTime)}</span>
+              </span>
+            </div>
+            <div class="goal-summary-result">${goal.homeScore}–${goal.awayScore} <span>(${formatPassCount(goal.passesBeforeGoal)})</span></div>
+          </div>
+        `).join("")}
+      </div>
+    `;
+  }
+
   function renderLiveMatchView(container) {
     const match = Store.match;
     document.getElementById("nav-title").textContent = "Live Match";
@@ -953,6 +1033,8 @@
       `;
     };
 
+    const goalSummaryHTML = renderGoalSummary(match);
+
     const visibleEvents = MatchLogic.visibleEvents(match);
     const eventsHTML =
       visibleEvents.length === 0
@@ -994,16 +1076,19 @@
 
       <div>
         <div class="section-label">Final Score</div>
-        <div class="card final-score-grid">
-          <div>
-            <div class="team-banner-name">${escapeHTML(match.homeTeam.name)}</div>
-            <div class="final-score-num">${MatchLogic.score(match, match.homeTeam.id)}</div>
+        <div class="card">
+          <div class="final-score-grid">
+            <div>
+              <div class="team-banner-name">${escapeHTML(match.homeTeam.name)}</div>
+              <div class="final-score-num">${MatchLogic.score(match, match.homeTeam.id)}</div>
+            </div>
+            <div class="final-score-num">–</div>
+            <div>
+              <div class="team-banner-name">${escapeHTML(match.awayTeam.name)}</div>
+              <div class="final-score-num">${MatchLogic.score(match, match.awayTeam.id)}</div>
+            </div>
           </div>
-          <div class="final-score-num">–</div>
-          <div>
-            <div class="team-banner-name">${escapeHTML(match.awayTeam.name)}</div>
-            <div class="final-score-num">${MatchLogic.score(match, match.awayTeam.id)}</div>
-          </div>
+          ${goalSummaryHTML}
         </div>
       </div>
 

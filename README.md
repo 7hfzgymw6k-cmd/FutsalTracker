@@ -3,6 +3,13 @@
 The interface uses a consistent dependency-free SVG line-icon system that
 inherits the application theme and remains available offline.
 
+## Passes before each goal
+
+- Every Goal records the scoring team's successful pass-sequence length
+  immediately before the goal. The match summary shows the score progression
+  for every goal, for example `2–1 (6 passes)`. The same goal progression is
+  included in shared text and interactive match links.
+
 ## Score background behavior
 
 - The score area normally shows the color of the team in possession. After a
