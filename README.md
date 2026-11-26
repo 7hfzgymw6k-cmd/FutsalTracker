@@ -7,6 +7,8 @@ inherits the application theme and remains available offline.
 
 - The `?` button opens an in-app guide to match setup, clock stoppages,
   possession changes, passes, accumulated fouls, summaries and offline use.
+- A labeled Help button on the front screen opens the same guide as the `?`
+  icon.
 
 ## Anonymous user counter
 

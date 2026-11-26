@@ -927,6 +927,8 @@
 
       <button id="start-match-btn" class="btn btn-primary" disabled>${renderIcon("play")}<span>Start Match</span></button>
 
+      <button id="front-help-btn" class="btn btn-secondary">${renderIcon("help")}<span>Help</span></button>
+
       ${latestSection}
     `;
 
@@ -948,6 +950,12 @@
 
     startBtn.addEventListener("click", () => {
       Store.startMatch(homeInput.value, awayInput.value);
+    });
+
+    document.getElementById("front-help-btn").addEventListener("click", () => {
+      Store.viewingHelp = true;
+      Store.viewingLegal = false;
+      render();
     });
 
     if (latest) {
@@ -1305,7 +1313,7 @@
       <div class="card stack-10">
         <div>
           <strong>Futsal Tracker</strong>
-          <div class="log-sub">Web App Edition · Version 1.2.1 (4)</div>
+          <div class="log-sub">Web App Edition · Version 1.2.2 (5)</div>
         </div>
         <hr style="border:none;border-top:1px solid var(--border-color);width:100%;" />
         <div>
